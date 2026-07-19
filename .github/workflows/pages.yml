@@ -1,4 +1,4 @@
-name: Validar y publicar ContaTécnica
+name: Construir rama pública de ContaTécnica
 
 on:
   push:
@@ -8,12 +8,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages-${{ github.ref }}
+  group: publicacion-gh-pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -32,7 +30,6 @@ jobs:
           import gzip
           import hashlib
           import shutil
-          import traceback
 
           expected_html = '18c6ea96909a407589578823164fbeb4dc19f46f76f085b11faafcf280c23fbb'
           expected_parts = [
@@ -44,81 +41,51 @@ jobs:
               ('app/fase3-04b1.dat', '9b465b8ca879c121851e14ddca70a57d59dcc44b0e6fbcc56e58dec626eb0352'),
               ('app/fase3-04b2.dat', '180755af107f1526d4d2579e5e0c7bf918c500ca9443a874cca183200690b06a'),
           ]
-          diagnostic = Path('_diagnostic')
-          diagnostic.mkdir(exist_ok=True)
-          report = []
 
-          try:
-              parts = []
-              for name, expected in expected_parts:
-                  path = Path(name)
-                  if not path.exists():
-                      raise RuntimeError(f'Falta {name}')
-                  data = path.read_bytes()
-                  digest = hashlib.sha256(data).hexdigest()
-                  report.append(f'{name}: bytes={len(data)} sha256={digest} esperado={expected}')
-                  if digest != expected:
-                      raise RuntimeError(f'Integridad incorrecta en {name}: {digest}')
-                  parts.append(path)
+          parts = []
+          for name, expected in expected_parts:
+              path = Path(name)
+              if not path.exists():
+                  raise SystemExit(f'Falta {name}')
+              data = path.read_bytes()
+              digest = hashlib.sha256(data).hexdigest()
+              if digest != expected:
+                  raise SystemExit(f'Integridad incorrecta en {name}: {digest}')
+              parts.append(path)
 
-              encoded = ''.join(path.read_text(encoding='utf-8').strip() for path in parts)
-              compressed = base64.b64decode(encoded, validate=True)
-              html = gzip.decompress(compressed)
-              digest = hashlib.sha256(html).hexdigest()
-              report.append(f'HTML: bytes={len(html)} sha256={digest} esperado={expected_html}')
-              if digest != expected_html:
-                  raise RuntimeError(f'Integridad incorrecta del HTML: {digest}')
+          encoded = ''.join(path.read_text(encoding='utf-8').strip() for path in parts)
+          html = gzip.decompress(base64.b64decode(encoded, validate=True))
+          digest = hashlib.sha256(html).hexdigest()
+          if digest != expected_html:
+              raise SystemExit(f'Integridad incorrecta del HTML: {digest}')
 
-              site = Path('_site')
-              if site.exists():
-                  shutil.rmtree(site)
-              site.mkdir()
-              (site / 'index.html').write_bytes(html)
-              (site / '.nojekyll').touch()
-              print(f'HTML validado: {len(html)} bytes, SHA-256 {digest}')
-          except Exception:
-              report.append(traceback.format_exc())
-              raise
-          finally:
-              (diagnostic / 'validacion.txt').write_text('\n'.join(report), encoding='utf-8')
+          site = Path('_site')
+          if site.exists():
+              shutil.rmtree(site)
+          site.mkdir()
+          (site / 'index.html').write_bytes(html)
+          (site / '.nojekyll').touch()
+          print(f'HTML validado: {len(html)} bytes, SHA-256 {digest}')
           PY
 
-      - name: Guardar diagnóstico si falla
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: diagnostico-validacion
-          path: _diagnostic
-
-      - name: Guardar sitio validado
-        if: success()
+      - name: Guardar copia validada
         uses: actions/upload-artifact@v4
         with:
           name: sitio-validado
           path: _site
 
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Descargar sitio validado
-        uses: actions/download-artifact@v4
-        with:
-          name: sitio-validado
-          path: _site
-
-      - name: Configurar GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Preparar publicación
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-      - name: Publicar sitio
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publicar en rama gh-pages
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          cp _site/index.html /tmp/contatecnica-index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan gh-pages
+          git rm -rf . || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp /tmp/contatecnica-index.html index.html
+          touch .nojekyll
+          git add index.html .nojekyll
+          git commit -m "Publicar ContaTécnica Fase 3 [skip ci]"
+          git push --force origin gh-pages
