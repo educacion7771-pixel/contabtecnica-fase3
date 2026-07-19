@@ -41,7 +41,8 @@ jobs:
               ('app/fase3-02a.dat', 'da21a2d0d3b8fced8e8a182ff4853cfafda82ce479f800fc272c701ad3946338'),
               ('app/fase3-03.dat', 'de8682cd191c96b8923b010dd709062a096baf36482a60843fa7030fe84ef887'),
               ('app/fase3-04a.dat', '2a6e88b3c8d813eacb9cac0f3c8fe05f00e035cca5b310d15a9b4144d0880e7a'),
-              ('app/fase3-04b.dat', '62cf9d3462c13eec4feea2c3d484db4019020a0747bd8f0b1b24f42c8ccbaf79'),
+              ('app/fase3-04b1.dat', '9b465b8ca879c121851e14ddca70a57d59dcc44b0e6fbcc56e58dec626eb0352'),
+              ('app/fase3-04b2.dat', '180755af107f1526d4d2579e5e0c7bf918c500ca9443a874cca183200690b06a'),
           ]
           diagnostic = Path('_diagnostic')
           diagnostic.mkdir(exist_ok=True)
