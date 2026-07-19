@@ -35,19 +35,20 @@ jobs:
           import traceback
 
           expected_html = '18c6ea96909a407589578823164fbeb4dc19f46f76f085b11faafcf280c23fbb'
-          expected_parts = {
-              'app/fase3-01.dat': '164ffd0fad4d71b5206c3897c4f87d99dd2c7c3ec5e55f10fe8b867cc0dd5bf4',
-              'app/fase3-02.dat': 'da21a2d0d3b8fced8e8a182ff4853cfafda82ce479f800fc272c701ad3946338',
-              'app/fase3-03.dat': 'de8682cd191c96b8923b010dd709062a096baf36482a60843fa7030fe84ef887',
-              'app/fase3-04.dat': '37e5c87688f7b29a5be3879609823aa0bc17a77b9a2b5ee7ffe173c696939140',
-          }
+          expected_parts = [
+              ('app/fase3-01a.dat', 'c12106c5bd5e591d28e18ce66dd7f39391ec2ccc561fe84e8d5b98a798c351f9'),
+              ('app/fase3-01b.dat', '2d5fff4d3554f7934a40230061eb534ebc0d926f587e0d0e5743f04e624840f3'),
+              ('app/fase3-02.dat', 'da21a2d0d3b8fced8e8a182ff4853cfafda82ce479f800fc272c701ad3946338'),
+              ('app/fase3-03.dat', 'de8682cd191c96b8923b010dd709062a096baf36482a60843fa7030fe84ef887'),
+              ('app/fase3-04.dat', '37e5c87688f7b29a5be3879609823aa0bc17a77b9a2b5ee7ffe173c696939140'),
+          ]
           diagnostic = Path('_diagnostic')
           diagnostic.mkdir(exist_ok=True)
           report = []
 
           try:
               parts = []
-              for name, expected in expected_parts.items():
+              for name, expected in expected_parts:
                   path = Path(name)
                   if not path.exists():
                       raise RuntimeError(f'Falta {name}')
