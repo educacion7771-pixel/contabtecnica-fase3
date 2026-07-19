@@ -32,29 +32,66 @@ jobs:
           import gzip
           import hashlib
           import shutil
+          import traceback
 
-          expected = '18c6ea96909a407589578823164fbeb4dc19f46f76f085b11faafcf280c23fbb'
-          parts = [Path(f'app/fase3-0{i}.dat') for i in range(1, 5)]
-          missing = [str(path) for path in parts if not path.exists()]
-          if missing:
-              raise SystemExit('Faltan archivos: ' + ', '.join(missing))
+          expected_html = '18c6ea96909a407589578823164fbeb4dc19f46f76f085b11faafcf280c23fbb'
+          expected_parts = [
+              ('app/fase3-01a.dat', 'c12106c5bd5e591d28e18ce66dd7f39391ec2ccc561fe84e8d5b98a798c351f9'),
+              ('app/fase3-01b.dat', '2d5fff4d3554f7934a40230061eb534ebc0d926f587e0d0e5743f04e624840f3'),
+              ('app/fase3-02a.dat', 'da21a2d0d3b8fced8e8a182ff4853cfafda82ce479f800fc272c701ad3946338'),
+              ('app/fase3-03.dat', 'de8682cd191c96b8923b010dd709062a096baf36482a60843fa7030fe84ef887'),
+              ('app/fase3-04a.dat', '2a6e88b3c8d813eacb9cac0f3c8fe05f00e035cca5b310d15a9b4144d0880e7a'),
+              ('app/fase3-04b1.dat', '9b465b8ca879c121851e14ddca70a57d59dcc44b0e6fbcc56e58dec626eb0352'),
+              ('app/fase3-04b2.dat', '180755af107f1526d4d2579e5e0c7bf918c500ca9443a874cca183200690b06a'),
+          ]
+          diagnostic = Path('_diagnostic')
+          diagnostic.mkdir(exist_ok=True)
+          report = []
 
-          encoded = ''.join(path.read_text(encoding='utf-8').strip() for path in parts)
-          html = gzip.decompress(base64.b64decode(encoded, validate=True))
-          digest = hashlib.sha256(html).hexdigest()
-          if digest != expected:
-              raise SystemExit(f'Integridad incorrecta: {digest}')
+          try:
+              parts = []
+              for name, expected in expected_parts:
+                  path = Path(name)
+                  if not path.exists():
+                      raise RuntimeError(f'Falta {name}')
+                  data = path.read_bytes()
+                  digest = hashlib.sha256(data).hexdigest()
+                  report.append(f'{name}: bytes={len(data)} sha256={digest} esperado={expected}')
+                  if digest != expected:
+                      raise RuntimeError(f'Integridad incorrecta en {name}: {digest}')
+                  parts.append(path)
 
-          site = Path('_site')
-          if site.exists():
-              shutil.rmtree(site)
-          site.mkdir()
-          (site / 'index.html').write_bytes(html)
-          (site / '.nojekyll').touch()
-          print(f'HTML validado: {len(html)} bytes, SHA-256 {digest}')
+              encoded = ''.join(path.read_text(encoding='utf-8').strip() for path in parts)
+              compressed = base64.b64decode(encoded, validate=True)
+              html = gzip.decompress(compressed)
+              digest = hashlib.sha256(html).hexdigest()
+              report.append(f'HTML: bytes={len(html)} sha256={digest} esperado={expected_html}')
+              if digest != expected_html:
+                  raise RuntimeError(f'Integridad incorrecta del HTML: {digest}')
+
+              site = Path('_site')
+              if site.exists():
+                  shutil.rmtree(site)
+              site.mkdir()
+              (site / 'index.html').write_bytes(html)
+              (site / '.nojekyll').touch()
+              print(f'HTML validado: {len(html)} bytes, SHA-256 {digest}')
+          except Exception:
+              report.append(traceback.format_exc())
+              raise
+          finally:
+              (diagnostic / 'validacion.txt').write_text('\n'.join(report), encoding='utf-8')
           PY
 
+      - name: Guardar diagnóstico si falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostico-validacion
+          path: _diagnostic
+
       - name: Guardar sitio validado
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: sitio-validado
