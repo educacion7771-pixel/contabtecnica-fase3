@@ -38,7 +38,8 @@ jobs:
           expected_parts = [
               ('app/fase3-01a.dat', 'c12106c5bd5e591d28e18ce66dd7f39391ec2ccc561fe84e8d5b98a798c351f9'),
               ('app/fase3-01b.dat', '2d5fff4d3554f7934a40230061eb534ebc0d926f587e0d0e5743f04e624840f3'),
-              ('app/fase3-02.dat', 'da21a2d0d3b8fced8e8a182ff4853cfafda82ce479f800fc272c701ad3946338'),
+              ('app/fase3-02a.dat', '15926e1d4fdf970b15f9f250fae615a51b18a671fd66bedfbfdaa6b77e15728c'),
+              ('app/fase3-02b.dat', '19b2df7e5a35847c494289f857657a64b20b62de492e89ffb817262ae226819a'),
               ('app/fase3-03.dat', 'de8682cd191c96b8923b010dd709062a096baf36482a60843fa7030fe84ef887'),
               ('app/fase3-04.dat', '37e5c87688f7b29a5be3879609823aa0bc17a77b9a2b5ee7ffe173c696939140'),
           ]
