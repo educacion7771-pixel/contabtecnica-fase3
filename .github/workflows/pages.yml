@@ -1,4 +1,4 @@
-name: Construir rama pública de ContaTécnica
+name: Construir rama pública de ContaTécnica Modo Aula
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Reconstruir y validar HTML
+      - name: Reconstruir y validar Modo Aula
         shell: bash
         run: |
           python3 <<'PY'
@@ -31,15 +31,22 @@ jobs:
           import hashlib
           import shutil
 
-          expected_html = '18c6ea96909a407589578823164fbeb4dc19f46f76f085b11faafcf280c23fbb'
+          expected_html = '4b9d5d97b994d7e15eb6cdb6562c53f766852f3e983c96d5bc5db1e30592016d'
           expected_parts = [
-              ('app/fase3-01a.dat', 'c12106c5bd5e591d28e18ce66dd7f39391ec2ccc561fe84e8d5b98a798c351f9'),
-              ('app/fase3-01b.dat', '2d5fff4d3554f7934a40230061eb534ebc0d926f587e0d0e5743f04e624840f3'),
-              ('app/fase3-02a.dat', 'da21a2d0d3b8fced8e8a182ff4853cfafda82ce479f800fc272c701ad3946338'),
-              ('app/fase3-03.dat', 'de8682cd191c96b8923b010dd709062a096baf36482a60843fa7030fe84ef887'),
-              ('app/fase3-04a.dat', '2a6e88b3c8d813eacb9cac0f3c8fe05f00e035cca5b310d15a9b4144d0880e7a'),
-              ('app/fase3-04b1.dat', '9b465b8ca879c121851e14ddca70a57d59dcc44b0e6fbcc56e58dec626eb0352'),
-              ('app/fase3-04b2.dat', '180755af107f1526d4d2579e5e0c7bf918c500ca9443a874cca183200690b06a'),
+              ('app/modo-aula-01.dat', 'a2873b2bd0287c713be7e26241dd438fccd3ad7559c48d5edc239bf1a0b18244'),
+              ('app/modo-aula-02.dat', '70651b48596e57b71963da060ce0ff83bedbfdfd319019e788f8b027fc60ead0'),
+              ('app/modo-aula-03.dat', 'fc0440fa930442d56ad88a379c246d1c850a33d7723128d0954d15423e9e1b17'),
+              ('app/modo-aula-04.dat', '2a5594616ab71cbc921c16fda4dcd641bb70d99c0af4ce2634b13ac1050fdcc7'),
+              ('app/modo-aula-05.dat', 'fc1b20942d8fc9e93b24706056b032c58a466532227d66e298771711101d2149'),
+              ('app/modo-aula-06.dat', 'bab500907b03a048de9464ba4b4441574e7d0fee017eba82961509e40bf706cc'),
+              ('app/modo-aula-07.dat', '782f8aee62119645411a6298a9fc4db2c08925ba6cc39d91385c42bf0db6fcc4'),
+              ('app/modo-aula-08-09.dat', 'df1675bb684e2d19f80e65948964c4e251993cb5f8c728bcf79380e240d18a02'),
+              ('app/modo-aula-10-11.dat', '163597a2babb09801b3f76b0f77f76ce779b6dcb6ac78f868ceabacf5d58dcae'),
+              ('app/modo-aula-12-13.dat', '6f7a7a558a4151e9677fd55663adad7346982633d1d7635dabf96f1444d407bb'),
+              ('app/modo-aula-14-15.dat', 'b50a7417a5991b8e393ef4a8d98656a01c60649621beb667216c7bc91435b5b6'),
+              ('app/modo-aula-16-17.dat', '111d1bf3110da9fff876340128952a5ecc7e062fdda3b082ad0f990967b24913'),
+              ('app/modo-aula-18-19.dat', '0a798bd55031bfb1aa2de5de2d299c0e9c8663f6cdaf90db258bdd287d690024'),
+              ('app/modo-aula-20-21.dat', 'f94bb24944e5f4f36b96bb08dae90e18e9f452996bb8a518c5d681e5e06e8804'),
           ]
 
           parts = []
@@ -65,13 +72,13 @@ jobs:
           site.mkdir()
           (site / 'index.html').write_bytes(html)
           (site / '.nojekyll').touch()
-          print(f'HTML validado: {len(html)} bytes, SHA-256 {digest}')
+          print(f'Modo Aula validado: {len(html)} bytes, SHA-256 {digest}')
           PY
 
       - name: Guardar copia validada
         uses: actions/upload-artifact@v4
         with:
-          name: sitio-validado
+          name: contatecnica-modo-aula
           path: _site
 
       - name: Publicar en rama gh-pages
@@ -87,5 +94,5 @@ jobs:
           cp /tmp/contatecnica-index.html index.html
           touch .nojekyll
           git add index.html .nojekyll
-          git commit -m "Publicar ContaTécnica Fase 3 [skip ci]"
+          git commit -m "Publicar ContaTécnica Modo Aula [skip ci]"
           git push --force origin gh-pages
