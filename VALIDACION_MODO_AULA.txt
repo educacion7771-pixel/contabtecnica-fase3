@@ -1,0 +1,1 @@
+Validación automatizada del paquete ContaTécnica Modo Aula.
